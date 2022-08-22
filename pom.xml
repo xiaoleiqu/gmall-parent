@@ -15,6 +15,7 @@
     </modules>
 
     <!--父工程打包方式为pom，代表这是一个父项目只来进行依赖、版本、模块管理-->
+    <!--test git02-->
     <packaging>pom</packaging>
 
     <!--引入spring boot 父工程-->
