@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.gmall.product.mapper.BaseAttrInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.atguigu.gmall.model.product.BaseAttrInfo">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="attrName" column="attr_name" jdbcType="VARCHAR"/>
+        <result property="categoryId" column="category_id" jdbcType="BIGINT"/>
+        <result property="categoryLevel" column="category_level" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,attr_name,category_id,
+        category_level
+    </sql>
+
+    <!-- 多表联查，需要自定义结果集-->
+    <!-- 查询的结果是一对多，需要指定结果集封装格式，否则每一条结果结果都会new BaseAttrInfo()，造成数据错误 -->
+    <!-- 除了id外，其他查询的结果与BaseAttrInfo的属性匹配，且符合驼峰命名，所以可以开启自动映射 -->
+    <!-- autoMapping: 数据库的列和JavaBean属性一一对应符合驼峰命名规则-->
+    <resultMap id="AttrInfoAndValue"
+               type="com.atguigu.gmall.model.product.BaseAttrInfo"
+               autoMapping="true">
+        <!--id标签区分唯一id-->
+        <id column="id" property="id"></id>
+        <!--        <result column="attr_name" property="attrName"></result>-->
+        <!--        <result column="category_id" property="categoryId"></result>-->
+        <!--        <result column="category_level" property="categoryLevel"></result>-->
+        <collection property="attrValueList"
+                    ofType="com.atguigu.gmall.model.product.BaseAttrValue"
+                    autoMapping="true">
+            <id column="vid" property="id"></id>
+            <!--            <result column="value_name" property="valueName"></result>-->
+            <!--            <result column="attr_id" property="attrId"></result>-->
+        </collection>
+
+    </resultMap>
+
+    <select id="getAttrInfoAndValueByCategoryId"
+            resultMap="AttrInfoAndValue">
+        select bai.*, bav.id vid, bav.value_name, bav.attr_id
+        from base_attr_info bai
+                 left join base_attr_value bav on bai.id = bav.attr_id
+        where (bai.category_id = #{c1Id} and bai.category_level = 1)
+           or (bai.category_id = #{c2Id} and bai.category_level = 2)
+           or (bai.category_id = #{c3Id} and bai.category_level = 3)
+
+    </select>
+</mapper>
