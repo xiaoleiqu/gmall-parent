@@ -76,14 +76,15 @@ public class BaseAttrInfoServiceImpl extends ServiceImpl<BaseAttrInfoMapper, Bas
 
         // 删除操作(不在传入的id值中的数据删除操作)
         if (vids.size() > 0) {
+
             // 部分删除
-            baseAttrValueMapper.delete(new QueryWrapper<BaseAttrValue>()
-                    .eq("attr_id", baseAttrInfo.getId()) // 查询出该平台id的属性值
-                    .notIn("id", vids)); // 根据属性值id，删除前台未传入的属性值
+            baseAttrValueMapper.delete(new LambdaQueryWrapper<BaseAttrValue>()
+                    .eq(BaseAttrValue::getAttrId, baseAttrInfo.getId()) // 查询出该平台id的属性值
+                    .notIn(BaseAttrValue::getId, vids)); // 根据属性值id，删除前台未传入的属性值
         } else {
             // 如果前台传入的属性值一个id都没带，需要把这个平台属性下的所有属性值全部删除
-            baseAttrValueMapper.delete(new QueryWrapper<BaseAttrValue>()
-                    .eq("attr_id", baseAttrInfo.getId()));
+            baseAttrValueMapper.delete(new LambdaQueryWrapper<BaseAttrValue>()
+                    .eq(BaseAttrValue::getAttrId, baseAttrInfo.getId()));
         }
 
         // 新增、修改操作

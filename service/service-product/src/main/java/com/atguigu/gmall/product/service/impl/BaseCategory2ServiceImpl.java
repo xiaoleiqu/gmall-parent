@@ -1,6 +1,7 @@
 package com.atguigu.gmall.product.service.impl;
 
 import com.atguigu.gmall.model.product.BaseCategory2;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.atguigu.gmall.product.service.BaseCategory2Service;
@@ -31,7 +32,7 @@ public class BaseCategory2ServiceImpl extends ServiceImpl<BaseCategory2Mapper, B
     @Override
     public List<BaseCategory2> getCategory1Child(Long c1Id) {
 
-        List<BaseCategory2> list = baseCategory2Mapper.selectList(new QueryWrapper<BaseCategory2>().eq("category1_id", c1Id));
+        List<BaseCategory2> list = baseCategory2Mapper.selectList(new LambdaQueryWrapper<BaseCategory2>().eq(BaseCategory2::getCategory1Id, c1Id));
 
         return list;
     }

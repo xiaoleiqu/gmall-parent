@@ -9,6 +9,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @author quxiaolei
  * @date 2022/8/23 - 23:10
@@ -63,7 +65,15 @@ public class BaseTrademarkController {
         baseTrademarkService.removeById(id);
 
         return Result.ok();
-
     }
 
+    // http://api.gmall.com/admin/product/baseTrademark/getTrademarkList
+    @ApiOperation("获取所有匹配属性")
+    @GetMapping("baseTrademark/getTrademarkList")
+    public Result getTrademarkList(){
+
+        List<BaseTrademark> list = baseTrademarkService.list();
+
+        return Result.ok(list);
+    }
 }

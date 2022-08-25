@@ -1,6 +1,7 @@
 package com.atguigu.gmall.product.service.impl;
 
 import com.atguigu.gmall.model.product.BaseAttrValue;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.atguigu.gmall.product.service.BaseAttrValueService;
@@ -29,7 +30,7 @@ public class BaseAttrValueServiceImpl extends ServiceImpl<BaseAttrValueMapper, B
      */
     @Override
     public List<BaseAttrValue> getAttrValueByAttrId(Long attrId) {
-        List<BaseAttrValue> baseAttrValueList = baseAttrValueMapper.selectList(new QueryWrapper<BaseAttrValue>().eq("attr_id", attrId));
+        List<BaseAttrValue> baseAttrValueList = baseAttrValueMapper.selectList(new LambdaQueryWrapper<BaseAttrValue>().eq(BaseAttrValue::getAttrId, attrId));
         return baseAttrValueList;
     }
 }

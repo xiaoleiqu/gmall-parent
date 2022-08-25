@@ -43,9 +43,7 @@ public class CategoryController {
     @Autowired
     BaseCategory3Service baseCategory3Service;
 
-    /**
-     * 获取所有一级分类
-     */
+
     @ApiOperation("获取所有一级分类")
     @GetMapping("getCategory1")
     public Result getCategory1() {
@@ -53,12 +51,6 @@ public class CategoryController {
         return Result.ok(list);
     }
 
-    /**
-     * 获取某个一级分类下的所有二级分类
-     *
-     * @param c1Id 一级分类的id
-     * @return
-     */
     @ApiOperation("获取所有二级分类")
     @GetMapping("getCategory2/{c1Id}")
     public Result getCategory2(@PathVariable("c1Id") Long c1Id) {
@@ -74,5 +66,4 @@ public class CategoryController {
         List<BaseCategory3> category3s = baseCategory3Service.getCategory2Child(c2Id);
         return Result.ok(category3s);
     }
-
 }

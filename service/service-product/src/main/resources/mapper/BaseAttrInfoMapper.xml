@@ -46,6 +46,5 @@
         where (bai.category_id = #{c1Id} and bai.category_level = 1)
            or (bai.category_id = #{c2Id} and bai.category_level = 2)
            or (bai.category_id = #{c3Id} and bai.category_level = 3)
-
     </select>
 </mapper>

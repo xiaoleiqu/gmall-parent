@@ -31,7 +31,7 @@ public class BaseCategory3ServiceImpl extends ServiceImpl<BaseCategory3Mapper, B
      */
     @Override
     public List<BaseCategory3> getCategory2Child(Long c2Id) {
-        List<BaseCategory3> category3s = baseCategory3Mapper.selectList(new QueryWrapper<BaseCategory3>().eq("category2_id", c2Id));
+        List<BaseCategory3> category3s = baseCategory3Mapper.selectList(new LambdaQueryWrapper<BaseCategory3>().eq(BaseCategory3::getCategory2Id, c2Id));
         return category3s;
     }
 }
