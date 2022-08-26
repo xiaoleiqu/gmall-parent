@@ -2,7 +2,10 @@ package com.atguigu.gmall.product.mapper;
 
 
 import com.atguigu.gmall.model.product.BaseCategory2;
+import com.atguigu.gmall.model.to.CategoryTreeTo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
 * @author 屈晓磊
@@ -12,6 +15,11 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface BaseCategory2Mapper extends BaseMapper<BaseCategory2> {
 
+    /**
+     * 首页三级分类树形结构查询
+     * @return
+     */
+    List<CategoryTreeTo> getAllCategoryWithTree();
 }
 
 

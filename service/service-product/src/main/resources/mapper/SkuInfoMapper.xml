@@ -36,4 +36,11 @@
         set is_sale = 0
         where id = #{skuId}
     </delete>
+
+    <!--查询实时价格-->
+    <select id="getRealPrice" resultType="java.math.BigDecimal">
+        select price
+        from sku_info
+        where id = #{skuId}
+    </select>
 </mapper>

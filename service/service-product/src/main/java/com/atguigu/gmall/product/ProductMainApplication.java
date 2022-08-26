@@ -9,6 +9,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
@@ -30,7 +31,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  *  *  3、精准导入：@Import({Swagger2Config.class})
  *
  */
-
+@EnableTransactionManagement //开启基于注解的事务
 @Import({Swagger2Config.class})
 @SpringCloudApplication
 @MapperScan(basePackages = "com.atguigu.gmall.product.mapper") // 自动扫描这个包下的所有mapper接口
