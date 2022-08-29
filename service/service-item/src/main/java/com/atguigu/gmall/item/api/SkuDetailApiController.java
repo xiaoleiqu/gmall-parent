@@ -22,7 +22,7 @@ public class SkuDetailApiController {
     @GetMapping("/skudetail/{skuId}")
     public Result<SkuDetailTo> getSkuDetail(@PathVariable("skuId") Long skuId) {
 
-        // TODO 商品详细大查询
+        // 商品详细大查询
         SkuDetailTo skuDetailTo = skuDetailService.getSkuDetail(skuId);
 
         return Result.ok(skuDetailTo);

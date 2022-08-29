@@ -3,7 +3,16 @@ server:
 spring:
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  redis:
+    host: 192.168.6.101
+    password: qxl123456
   zipkin:
     base-url: http://192.168.6.101:9411/
     sender:
       type: web
+app:
+  thread-pool:
+    core: 4
+    max: 8
+    queue-size: 2000
+    keep-alive-time: 300

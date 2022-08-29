@@ -3,6 +3,7 @@ package com.atguigu.gmall.product.service.impl;
 import com.atguigu.gmall.model.product.*;
 import com.atguigu.gmall.model.to.CategoryViewTo;
 import com.atguigu.gmall.model.to.SkuDetailTo;
+import com.atguigu.gmall.model.to.ValueSkuJsonTo;
 import com.atguigu.gmall.product.mapper.BaseCategory3Mapper;
 import com.atguigu.gmall.product.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -119,10 +120,37 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
         //          spu_sale_attr、spu_sale_attr_value
         // 并标识出当前sku到底spu的那种组合，页面要有高亮框 sku_sale_attr_value
         //查询当前sku对应的spu定义的所有销售属性名和值（固定好顺序）并且标记好当前sku属于哪一种组合
-        List<SpuSaleAttr> saleAttrList = spuSaleAttrService.getSaleAttrAndValueMarkSku(skuInfo.getSpuId(),skuId);
+        List<SpuSaleAttr> saleAttrList = spuSaleAttrService.getSaleAttrAndValueMarkSku(skuInfo.getSpuId(), skuId);
         detailTo.setSpuSaleAttrList(saleAttrList);
 
+        // 6、商品（sku）的所有兄弟产品的销售属性名和值组合关系全部查询出来，并封装
+        Long spuId = skuInfo.getSpuId();
+        String valueJson = spuSaleAttrService.getAllSkuSaleAttrValueJson(spuId);
+        detailTo.setValuesSkuJson(valueJson);
+
         return detailTo;
+    }
+
+    /**
+     * 获取sku_info信息
+     * @param skuId
+     * @return
+     */
+    @Override
+    public SkuInfo getDetailSkuInfo(Long skuId) {
+        SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
+        return skuInfo;
+    }
+
+    /**
+     * 查询sku的图片信息
+     * @param skuId
+     * @return
+     */
+    @Override
+    public List<SkuImage> getDetailSkuImages(Long skuId) {
+        List<SkuImage> imageList = skuImageService.getSkuImage(skuId);
+        return imageList;
     }
 
     /**
@@ -131,10 +159,11 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
      * @param skuId
      * @return
      */
-    private BigDecimal get1010Price(Long skuId) {
-       BigDecimal price = skuInfoMapper.getRealPrice(skuId);
-       return price;
+    public BigDecimal get1010Price(Long skuId) {
+        BigDecimal price = skuInfoMapper.getRealPrice(skuId);
+        return price;
     }
+
 }
 
 
