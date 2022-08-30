@@ -1,5 +1,6 @@
 package com.atguigu.gmall.product;
 
+import com.atguigu.gmall.common.config.RedissonAutoConfiguration;
 import com.atguigu.gmall.common.config.Swagger2Config;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -32,7 +33,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  *
  */
 @EnableTransactionManagement //开启基于注解的事务
-@Import({Swagger2Config.class})
+@Import({Swagger2Config.class, RedissonAutoConfiguration.class})
 @SpringCloudApplication
 @MapperScan(basePackages = "com.atguigu.gmall.product.mapper") // 自动扫描这个包下的所有mapper接口
 public class ProductMainApplication {

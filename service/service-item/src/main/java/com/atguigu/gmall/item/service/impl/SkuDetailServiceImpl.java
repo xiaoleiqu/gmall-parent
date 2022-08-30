@@ -1,7 +1,9 @@
 package com.atguigu.gmall.item.service.impl;
 
+import com.atguigu.gmall.common.constant.SysRedisConst;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.util.Jsons;
+import com.atguigu.gmall.item.cache.CacheOpsService;
 import com.atguigu.gmall.item.feign.SkuDetailFeignClient;
 import com.atguigu.gmall.item.service.SkuDetailService;
 import com.atguigu.gmall.model.product.SkuImage;
@@ -9,6 +11,7 @@ import com.atguigu.gmall.model.product.SkuInfo;
 import com.atguigu.gmall.model.product.SpuSaleAttr;
 import com.atguigu.gmall.model.to.CategoryViewTo;
 import com.atguigu.gmall.model.to.SkuDetailTo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -16,14 +19,18 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author quxiaolei
  * @date 2022/8/26 - 22:41
  */
+@Slf4j
 @Service
 public class SkuDetailServiceImpl implements SkuDetailService {
 
@@ -36,6 +43,16 @@ public class SkuDetailServiceImpl implements SkuDetailService {
 
     @Autowired
     StringRedisTemplate redisTemplate;
+
+//    // 每个skuId,关联一把自己的锁
+//    Map<Long, ReentrantLock> lockpool = new ConcurrentHashMap();
+//
+//    //锁的粒度太大了，把无关的人都锁住了
+//    ReentrantLock lock = new ReentrantLock(); //锁的住
+
+    @Autowired
+    CacheOpsService cacheOpsService;
+
 
     /**
      * 商品详情大查询
@@ -70,8 +87,11 @@ public class SkuDetailServiceImpl implements SkuDetailService {
 
         //2、查商品图片信息  1s
         CompletableFuture<Void> imageFuture = skuInfoFuture.thenAcceptAsync(skuInfo -> {
-            Result<List<SkuImage>> skuImages = skuDetailFeignClient.getSkuImages(skuId);
-            skuInfo.setSkuImageList(skuImages.getData());
+            if (skuInfo != null) {
+                Result<List<SkuImage>> skuImages = skuDetailFeignClient.getSkuImages(skuId);
+                skuInfo.setSkuImageList(skuImages.getData());
+            }
+
         }, executor);
 
 
@@ -84,23 +104,30 @@ public class SkuDetailServiceImpl implements SkuDetailService {
 
         //4、查销售属性名值
         CompletableFuture<Void> saleAttrFuture = skuInfoFuture.thenAcceptAsync(skuInfo -> {
-            Long spuId = skuInfo.getSpuId();
-            Result<List<SpuSaleAttr>> saleattrvalues = skuDetailFeignClient.getSkuSaleattrvalues(skuId, spuId);
-            detailTo.setSpuSaleAttrList(saleattrvalues.getData());
+            if (skuInfo != null) {
+                Long spuId = skuInfo.getSpuId();
+                Result<List<SpuSaleAttr>> saleattrvalues = skuDetailFeignClient.getSkuSaleattrvalues(skuId, spuId);
+                detailTo.setSpuSaleAttrList(saleattrvalues.getData());
+            }
+
         }, executor);
 
 
         //5、查sku组合
         CompletableFuture<Void> skuVlaueFuture = skuInfoFuture.thenAcceptAsync(skuInfo -> {
-            Result<String> sKuValueJson = skuDetailFeignClient.getSKuValueJson(skuInfo.getSpuId());
-            detailTo.setValuesSkuJson(sKuValueJson.getData());
+            if (skuInfo != null) {
+                Result<String> sKuValueJson = skuDetailFeignClient.getSKuValueJson(skuInfo.getSpuId());
+                detailTo.setValuesSkuJson(sKuValueJson.getData());
+            }
         }, executor);
 
 
         //6、查分类
         CompletableFuture<Void> categoryFuture = skuInfoFuture.thenAcceptAsync(skuInfo -> {
-            Result<CategoryViewTo> categoryView = skuDetailFeignClient.getCategoryView(skuInfo.getCategory3Id());
-            detailTo.setCategoryView(categoryView.getData());
+            if (skuInfo != null) {
+                Result<CategoryViewTo> categoryView = skuDetailFeignClient.getCategoryView(skuInfo.getCategory3Id());
+                detailTo.setCategoryView(categoryView.getData());
+            }
         }, executor);
 
         //异步实际上是： 空间换时间；  new Thread()
@@ -130,9 +157,51 @@ public class SkuDetailServiceImpl implements SkuDetailService {
         return detailTo;
     }
 
-    // 使用缓存优化
+    // 使用缓存优化,最终版本
     @Override
     public SkuDetailTo getSkuDetail(Long skuId) {
+        String cacheKey = SysRedisConst.SKU_INFO_PREFIX + skuId;
+
+        // 1.先查缓存
+        SkuDetailTo cacheData = cacheOpsService.getCacheData(cacheKey, SkuDetailTo.class);
+
+        // 2.判断
+        if (cacheData == null) {
+            // 3.缓存中没有
+            // 4.先询问布隆过滤器，是否有这个商品
+            boolean contain = cacheOpsService.bloomContains(skuId);
+            if (!contain) {
+                // 5.布隆说没有，就一定没有
+                log.info("[{}]商品 - 布隆判定没有，检测到隐藏的攻击风险....", skuId);
+                return null;
+            }
+            // 6.布隆说有，有可能有，就需要回源，此时需要加锁
+            boolean lock = cacheOpsService.tryLock(skuId); // 为当前商品加自己的分布式锁。
+            if (lock) {
+                // 7.获取锁成功，远程查询
+                log.info("[{}]商品 缓存未命中，布隆说有，准备回源.....", skuId);
+                SkuDetailTo fromRpc = getSkuDetailFromRpc(skuId);
+                // 8.将查询到的数据放入缓存中
+                cacheOpsService.saveData(cacheKey, fromRpc);
+                // 9.解锁
+                cacheOpsService.unlock(skuId);
+                return fromRpc;
+            }
+            // 10.没有获得锁
+            try {
+                Thread.sleep(1000);
+                return cacheOpsService.getCacheData(cacheKey, SkuDetailTo.class);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        // 缓存中有，直接获取
+        return cacheData;
+    }
+
+    // ==========================================================================================
+    // 使用缓存优化,之前版本
+    public SkuDetailTo getSkuDetailxxxx(Long skuId) {
         //1、看缓存中有没有  sku:info:50
         String jsonStr = redisTemplate.opsForValue().get("sku:info:" + skuId);
         if ("x".equals(jsonStr)) {

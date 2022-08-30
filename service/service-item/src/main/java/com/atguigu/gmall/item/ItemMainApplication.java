@@ -1,9 +1,11 @@
 package com.atguigu.gmall.item;
 
 import com.atguigu.gmall.common.annotation.EnableThreadPool;
+import com.atguigu.gmall.common.config.RedissonAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.context.annotation.Import;
 
 /**
  * @author quxiaolei
@@ -26,6 +28,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  *    StringRedisTemplate = RedisTemplate<String, String> ；
  *    给redis存数据，key是string，value序列化成字符串
  */
+@Import(RedissonAutoConfiguration.class)
 @EnableThreadPool // 自定义注解，导入线程池
 @EnableFeignClients
 @SpringCloudApplication

@@ -62,4 +62,10 @@ public interface SkuInfoService extends IService<SkuInfo> {
      * @return
      */
     BigDecimal get1010Price(Long skuId);
+
+    /**
+     * 查询出所有的skuId
+     * @return
+     */
+    List<Long> findAllSkuId();
 }
