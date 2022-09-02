@@ -1,9 +1,5 @@
-package com.atguigu.gmall.common.constant;
+package com.atguigu.starter.cache.constant;
 
-/**
- * @author quxiaolei
- * @date 2022/8/30 - 21:55
- */
 public class SysRedisConst {
 
     public static final String NULL_VAL = "x";
@@ -14,6 +10,5 @@ public class SysRedisConst {
     public static final String SKU_INFO_PREFIX = "sku:info:";
 
     public static final String BLOOM_SKUID = "bloom:skuid";
-
-    public static final String CACHE_CATEGORYS = "categorys";
+    public static final String LOCK_PREFIX = "lock:";
 }

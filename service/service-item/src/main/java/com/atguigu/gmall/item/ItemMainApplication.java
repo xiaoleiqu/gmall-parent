@@ -28,7 +28,6 @@ import org.springframework.context.annotation.Import;
  *    StringRedisTemplate = RedisTemplate<String, String> ；
  *    给redis存数据，key是string，value序列化成字符串
  */
-@Import(RedissonAutoConfiguration.class)
 @EnableThreadPool // 自定义注解，导入线程池
 @EnableFeignClients
 @SpringCloudApplication

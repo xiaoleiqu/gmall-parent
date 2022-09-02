@@ -2,8 +2,7 @@ package com.atguigu.gmall.item.service.impl;
 
 import com.atguigu.gmall.common.constant.SysRedisConst;
 import com.atguigu.gmall.common.result.Result;
-import com.atguigu.gmall.common.util.Jsons;
-import com.atguigu.gmall.item.cache.CacheOpsService;
+
 import com.atguigu.gmall.item.feign.SkuDetailFeignClient;
 import com.atguigu.gmall.item.service.SkuDetailService;
 import com.atguigu.gmall.model.product.SkuImage;
@@ -11,20 +10,20 @@ import com.atguigu.gmall.model.product.SkuInfo;
 import com.atguigu.gmall.model.product.SpuSaleAttr;
 import com.atguigu.gmall.model.to.CategoryViewTo;
 import com.atguigu.gmall.model.to.SkuDetailTo;
+import com.atguigu.starter.cache.annotation.GmallCache;
+import com.atguigu.starter.cache.service.CacheOpsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
+
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
+
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author quxiaolei
@@ -60,7 +59,7 @@ public class SkuDetailServiceImpl implements SkuDetailService {
      * @param skuId
      * @return
      */
-    //未缓存优化前 - 400/s
+    //未缓存优化前,直接查询
     public SkuDetailTo getSkuDetailFromRpc(Long skuId) {
 
         // 远程调用service-product （大查询，需要优化）
@@ -157,9 +156,9 @@ public class SkuDetailServiceImpl implements SkuDetailService {
         return detailTo;
     }
 
-    // 使用缓存优化,最终版本
-    @Override
-    public SkuDetailTo getSkuDetail(Long skuId) {
+    // 使用缓存优化,单独Sku使用的，未实现AOP的
+    public SkuDetailTo getSkuDetailWithCache(Long skuId) {
+
         String cacheKey = SysRedisConst.SKU_INFO_PREFIX + skuId;
 
         // 1.先查缓存
@@ -199,36 +198,48 @@ public class SkuDetailServiceImpl implements SkuDetailService {
         return cacheData;
     }
 
+    // 使用缓存优化,最终版本，实现AOP编程
+    @GmallCache(
+            cacheKey = SysRedisConst.SKU_INFO_PREFIX + "#{#params[0]}",
+            bloomName = SysRedisConst.BLOOM_SKUID,
+            bloomValue = "#{#params[0]}",
+            lockName = SysRedisConst.LOCK_SKU_DETAIL + "#{#params[0]}")
+    @Override
+    public SkuDetailTo getSkuDetail(Long skuId) {
+        SkuDetailTo fromRpc = getSkuDetailFromRpc(skuId);
+        return fromRpc;
+    }
+
     // ==========================================================================================
     // 使用缓存优化,之前版本
-    public SkuDetailTo getSkuDetailxxxx(Long skuId) {
-        //1、看缓存中有没有  sku:info:50
-        String jsonStr = redisTemplate.opsForValue().get("sku:info:" + skuId);
-        if ("x".equals(jsonStr)) {
-            //说明以前查过，只不过数据库没有此记录，为了避免再次回源，缓存了一个占位符
-            return null;
-        }
-        //
-        if (StringUtils.isEmpty(jsonStr)) {
-            //2、redis没有缓存数据
-            //2.1、回源。之前可以判断redis中保存的sku的id集合，有没有这个id
-            //防止随机值穿透攻击？
-            SkuDetailTo fromRpc = getSkuDetailFromRpc(skuId);
-            //2.2、放入缓存【查到的对象转为json字符串保存到redis】
-            String cacheJson = "x";
-            if (fromRpc != null) {
-                cacheJson = Jsons.toStr(fromRpc);
-                redisTemplate.opsForValue().set("sku:info:" + skuId, cacheJson, 7, TimeUnit.DAYS);
-            } else {
-                redisTemplate.opsForValue().set("sku:info:" + skuId, cacheJson, 30, TimeUnit.MINUTES);
-            }
-
-            return fromRpc;
-        }
-        //3、缓存中有. 把json转成指定的对象
-        SkuDetailTo skuDetailTo = Jsons.toObj(jsonStr, SkuDetailTo.class);
-        return skuDetailTo;
-    }
+//    public SkuDetailTo getSkuDetailxxxx(Long skuId) {
+//        //1、看缓存中有没有  sku:info:50
+//        String jsonStr = redisTemplate.opsForValue().get("sku:info:" + skuId);
+//        if ("x".equals(jsonStr)) {
+//            //说明以前查过，只不过数据库没有此记录，为了避免再次回源，缓存了一个占位符
+//            return null;
+//        }
+//        //
+//        if (StringUtils.isEmpty(jsonStr)) {
+//            //2、redis没有缓存数据
+//            //2.1、回源。之前可以判断redis中保存的sku的id集合，有没有这个id
+//            //防止随机值穿透攻击？
+//            SkuDetailTo fromRpc = getSkuDetailFromRpc(skuId);
+//            //2.2、放入缓存【查到的对象转为json字符串保存到redis】
+//            String cacheJson = "x";
+//            if (fromRpc != null) {
+//                cacheJson = Jsons.toStr(fromRpc);
+//                redisTemplate.opsForValue().set("sku:info:" + skuId, cacheJson, 7, TimeUnit.DAYS);
+//            } else {
+//                redisTemplate.opsForValue().set("sku:info:" + skuId, cacheJson, 30, TimeUnit.MINUTES);
+//            }
+//
+//            return fromRpc;
+//        }
+//        //3、缓存中有. 把json转成指定的对象
+//        SkuDetailTo skuDetailTo = Jsons.toObj(jsonStr, SkuDetailTo.class);
+//        return skuDetailTo;
+//    }
 
 
 //    @Override  //使用本地缓存

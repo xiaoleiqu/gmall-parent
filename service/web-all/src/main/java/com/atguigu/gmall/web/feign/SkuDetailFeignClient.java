@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @RequestMapping("/api/inner/rpc.item")
 @FeignClient("service-item")
-public interface SkuDetailFeginClient {
+public interface SkuDetailFeignClient {
 
     @GetMapping("/skudetail/{skuId}")
     Result<SkuDetailTo> getSkuDetail(@PathVariable("skuId") Long skuId);

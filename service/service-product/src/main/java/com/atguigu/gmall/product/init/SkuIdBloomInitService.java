@@ -36,7 +36,7 @@ public class SkuIdBloomInitService {
         // 1.查询出所有的skuId
         List<Long> skuIds = skuInfoService.findAllSkuId();
 
-        // 2.把所有的id初始化到布隆过滤器中
+        // 2.创建布隆过滤器中
         RBloomFilter<Object> filter = redissonClient.getBloomFilter(SysRedisConst.BLOOM_SKUID);
 
         // 3.初始化布隆过滤器

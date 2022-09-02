@@ -12,6 +12,7 @@
         <module>model</module>
         <module>service</module>
         <module>server-gateway</module>
+        <module>mall-cache-starter</module>
     </modules>
 
     <!--父工程打包方式为pom，代表这是一个父项目只来进行依赖、版本、模块管理-->

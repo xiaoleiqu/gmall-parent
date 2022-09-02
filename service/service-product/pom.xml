@@ -25,12 +25,19 @@
             <scope>test</scope>
         </dependency>
 
-        <!--添加如下依赖，配置文件内自定义的配置，会有提示-->
+        <!--添加下依赖，配置文件内自定义的配置，会有提示-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <dependency>
+            <groupId>com.atguigu.gmall</groupId>
+            <artifactId>mall-cache-starter</artifactId>
+            <version>1.0</version>
+        </dependency>
+
     </dependencies>
 
 
