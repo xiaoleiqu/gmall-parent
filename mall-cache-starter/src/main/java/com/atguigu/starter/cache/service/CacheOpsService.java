@@ -28,6 +28,13 @@ public interface CacheOpsService {
     Object getCacheData(String cacheKey, Type type);
 
     /**
+     * 延迟双删
+     *
+     * @param cacheKey
+     */
+    void delay2Delete(String cacheKey);
+
+    /**
      * 布隆过滤器判断是否有这个商品
      *
      * @param skuId
@@ -37,6 +44,7 @@ public interface CacheOpsService {
 
     /**
      * 判定指定布隆过滤器（bloomName） 是否 包含 指定值（bVal）
+     *
      * @param bloomName
      * @param bVal
      * @return
@@ -53,6 +61,7 @@ public interface CacheOpsService {
 
     /**
      * 加指定的分布式锁
+     *
      * @param lockName
      * @return
      */
@@ -67,6 +76,15 @@ public interface CacheOpsService {
     void saveData(String cacheKey, Object fromRpc);
 
     /**
+     * 把指定对象使用指定的key保存到redis,并且自定义缓存的过期时间
+     *
+     * @param cacheKey
+     * @param fromRpc
+     * @param dataTtl  传入的过期时间(以秒为单位)
+     */
+    void saveData(String cacheKey, Object fromRpc, Long dataTtl);
+
+    /**
      * 解锁
      *
      * @param skuId
@@ -75,6 +93,7 @@ public interface CacheOpsService {
 
     /**
      * 解指定的锁
+     *
      * @param lockName
      */
     void unlock(String lockName);

@@ -95,9 +95,9 @@ public class CacheAspect {
                 if (lock) {
                     // 7.获取锁成功，开始回源,调用目标方法
                     result = joinPoint.proceed(joinPoint.getArgs());
-
+                    long ttl = determinTtl(joinPoint); // 获取传入的过期时间
                     // 8.调用成功，重新保存到缓存中
-                    cacheOpsService.saveData(cacheKey, result);
+                    cacheOpsService.saveData(cacheKey, result, ttl);
                     return result;
                 } else {
                     Thread.sleep(1000L);
@@ -112,6 +112,20 @@ public class CacheAspect {
         }
 
         return cacheData;
+    }
+
+    /**
+     * 获取传入的过期时间
+     *
+     * @param joinPoint
+     * @return
+     */
+    private long determinTtl(ProceedingJoinPoint joinPoint) {
+
+        //获取到GmallCache注解
+        GmallCache cacheAnnotation = cacheAnnotation(joinPoint);
+        long ttl = cacheAnnotation.ttl();
+        return ttl;
     }
 
     /**
