@@ -33,6 +33,9 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  *  *  3、精准导入：@Import({Swagger2Config.class})
  *
  */
+@EnableFeignClients(basePackages = {
+        "com.atguigu.gmall.feign.search"
+})
 @EnableScheduling
 @EnableTransactionManagement //开启基于注解的事务
 @Import({Swagger2Config.class})

@@ -6,7 +6,7 @@ server:
 #数据源配置好
 spring:
   profiles:
-    active: sharding  # 主文件 application.yaml 和激活的 application-{profile}.yaml 同时生效
+    include: sharding   # 主文件 application.yaml 和激活的 application-{profile}.yaml 同时生效
 
   datasource:
     url: jdbc:mysql://192.168.6.101:3306/gmall_product?useSSL=false&characterEncoding=utf-8

@@ -28,7 +28,7 @@ public class CategoryApiController {
     @GetMapping("/category/tree")
     public Result getAllCategoryWithTree() {
 
-        // TODO 调用service查询三级分类接口
+        // 调用service查询三级分类接口
         List<CategoryTreeTo> categoryTreeTos = baseCategory2Service.getAllCategoryWithTree();
 
         return Result.ok(categoryTreeTos);

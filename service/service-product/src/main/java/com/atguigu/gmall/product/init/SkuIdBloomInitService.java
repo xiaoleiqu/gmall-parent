@@ -29,7 +29,7 @@ public class SkuIdBloomInitService {
     @Autowired
     RedissonClient redissonClient;
 
-    @PostConstruct //当前组件对象创建成功以后，就执行
+    @PostConstruct //当前组件对象创建成功以后，就执行以下代码
     public void initSkuBloom() {
         log.info("布隆初始化正在进行....");
 

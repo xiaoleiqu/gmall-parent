@@ -1,0 +1,15 @@
+server:
+  port: 10001
+
+# 排除数据库依赖
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  elasticsearch:
+    rest:
+      uris: http://192.168.6.101:9200
+
+logging:
+  level:
+    tracer: trace  #打开追踪器
+    org.elasticsearch: trace
