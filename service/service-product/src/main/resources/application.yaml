@@ -1,5 +1,5 @@
 server:
-  port: 9001
+  port: 9002
   tomcat:
     max-connections: 200 # 我们的内存支持不了8000连接
 

@@ -21,7 +21,8 @@ spring:
 
 
 
-      # 所有的网关路由规则
+      # 所有的网关路由规则(路由的配置应该小范围的在上，大范围的在下。
+      # 例如：如果cart_router配置在web_all_route后面，所有的域名的请求都会过web_all。不会在过cart_router路由)
       routes:
         - id: product_route # 以/admin/product开头的所有请求都以lb(loadbalancer负载均衡)转给service-product
           uri: lb://service-product
@@ -38,7 +39,28 @@ spring:
           predicates:
             - Path=/api/user/**
 
+        - id: cart_router
+          uri: lb://service-cart
+          predicates:
+            - Path=/api/cart/**
+
         - id: web_all_route
           uri: lb://web-all
           predicates:
             - Host=**.gmall.com
+
+app:
+  auth:
+    no-auth-url: #任意人无需登录都能访问的路径
+      - /css/**
+      - /js/**
+      - /img/**
+      - /login.html
+      - /api/user/passport/login
+
+    login-auth-url: #登录以后才能访问的资源
+      - /order/**
+    deny-url:
+      - /api/inner/**
+
+    login-page: http://passport.gmall.com/login.html

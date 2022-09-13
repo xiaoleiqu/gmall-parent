@@ -32,15 +32,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
     @Autowired
     StringRedisTemplate redisTemplate;
 
+    /**
+     * 登录
+     *
+     * @param Info
+     * @return
+     */
     @Override
-    public LoginSuccessVo login(UserInfo userInfo) {
+    public LoginSuccessVo login(UserInfo Info) {
 
         LoginSuccessVo vo = new LoginSuccessVo();
 
         // 1.查询数据库
-        UserInfo userInfo1 = userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>()
-                .eq(UserInfo::getName, userInfo.getLoginName())
-                .eq(UserInfo::getPasswd, MD5.encrypt(userInfo.getPasswd())));
+        UserInfo userInfo = userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>()
+                .eq(UserInfo::getName, Info.getLoginName())
+                .eq(UserInfo::getPasswd, MD5.encrypt(Info.getPasswd())));
 
         // 2.登录成功
         if (userInfo != null) {
@@ -50,11 +56,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
             // redis中绑定信息
             redisTemplate.opsForValue()
                     .set(SysRedisConst.LOGIN_USER + token,
-                            Jsons.toStr(userInfo1),
+                            Jsons.toStr(userInfo),
                             7, TimeUnit.DAYS);
 
             vo.setToken(token);
-            vo.setNickName(userInfo1.getNickName());
+            vo.setNickName(userInfo.getNickName());
 
             return vo;
         }
