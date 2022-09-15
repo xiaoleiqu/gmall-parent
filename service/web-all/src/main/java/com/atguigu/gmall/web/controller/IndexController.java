@@ -21,7 +21,7 @@ public class IndexController {
     @Autowired
     CategoryFeignClient categoryFeignClient;
 
-    @GetMapping({"/", "/index"})
+    @GetMapping({"/", "/index","/index.html"})
     public String indexPage(Model model) {
 
         // 查询出所有的菜单，封装成一个树形结构的数据模型

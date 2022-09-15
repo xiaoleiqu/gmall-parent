@@ -64,12 +64,10 @@ public class SpuController {
 
     @ApiOperation("根据spuId获取图片列表")
     @GetMapping("spuImageList/{spuId}")
-    public Result getSpuImageListBySpuId(@PathVariable("spuId") Long spuId ){
+    public Result getSpuImageListBySpuId(@PathVariable("spuId") Long spuId) {
 
         List<SpuImage> spuImages = spuImageService.list(new LambdaQueryWrapper<SpuImage>().eq(SpuImage::getSpuId, spuId));
 
         return Result.ok(spuImages);
     }
-
-
 }

@@ -54,22 +54,25 @@ spring:
       #读写分离
       readwrite-splitting:
         data-sources:
-          order0ds: #order 0库读写分离配置
+          order0ds: #order 0库读写分离配置 逻辑源
             type: Static
             props:
               write-data-source-name: order_0_m
               read-data-source-names: order_0_s1,order_0_s2
             load-balancer-name: haha
 
-          order1ds: #order 1库读写分离配置
+          order1ds: #order 1库读写分离配置 逻辑源
             type: Static
             props:
               write-data-source-name: order_1_m
               read-data-source-names: order_1_s1,order_1_s2
             load-balancer-name: haha
+
         load-balancers:
           haha:
             type: ROUND_ROBIN
+
+
 
       #分库分表  select * from order_info where user_id=2
       sharding:
@@ -80,7 +83,7 @@ spring:
             sharding-column: user_id
             sharding-algorithm-name: user_id_mod2
 
-        #指定具有绑定关系的表
+        # 指定具有绑定关系的表 指定了绑定表关系，多表联查时，order_info去几库就去几库。不用判断是否需要夸库join
         binding-tables:
           - order_info,order_detail
           - order_info,order_status_log
@@ -98,8 +101,6 @@ spring:
             key-generate-strategy:
               column: id
               key-generator-name: xuehua
-
-
 
           order_detail:
             actual-data-nodes: order$->{0..1}ds.order_detail_$->{0..2}
@@ -131,7 +132,7 @@ spring:
           #指定每种算法怎么算
           user_id_mod2:
             type: INLINE
-            props:  # 0,1
+            props: # 0,1
               algorithm-expression: order$->{user_id % 2}ds
 
 
